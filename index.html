@@ -9,5 +9,33 @@
 :root{color-scheme:light;--ink:#202124;--muted:#6b7280;--line:#d9dde5;--blue:#2563eb}*{box-sizing:border-box}body{margin:0;min-height:100svh;background:#f7f8fa;color:var(--ink);font-family:Arial,sans-serif;display:flex;justify-content:center}.app{width:100%;max-width:424px;min-height:100svh;background:#fff;display:flex;flex-direction:column}header{height:52px;background:#fff;border-bottom:1px solid #f0f1f3;flex:none}main{flex:1;padding:44px 24px 28px}.content{max-width:360px;margin:0 auto}h1{margin:0 0 8px;font-size:25px;line-height:1.25;letter-spacing:-.3px;font-weight:700}.subtitle{margin:0 0 28px;color:var(--muted);font-size:14px;line-height:1.55}label{display:block;margin-bottom:9px;font-size:13px;font-weight:600}input{width:100%;height:48px;padding:0 14px;border:1px solid var(--line);border-radius:10px;color:var(--ink);background:#fff;font-size:16px;outline:none}input:focus{border:2px solid var(--blue);padding:0 13px}button{width:100%;min-height:48px;margin-top:18px;border:0;border-radius:10px;background:var(--blue);color:#fff;font-size:14px;font-weight:700;cursor:pointer}button:focus-visible{outline:3px solid #bfdbfe;outline-offset:2px}@media(max-width:360px){main{padding-left:18px;padding-right:18px}h1{font-size:23px}}
 </style>
 </head>
-<body><div class="app"><header aria-label="Header halaman"></header><main><div class="content"><h1>Halo Sobat</h1><p class="subtitle">Silakan isi kolom di bawah ini untuk melanjutkan.</p><form><label for="firstName">Nama Depan</label><input id="firstName" name="firstName" type="text" autocomplete="given-name" placeholder="Masukkan nama depan"><button type="submit">Lanjutkan</button></form></div></main></div></body>
+<body><div class="app"><header aria-label="Header halaman"></header><main><div class="content"><h1>Halo Sobat</h1><p class="subtitle">Silakan isi kolom di bawah ini untuk melanjutkan.</p><form id="nameForm"><label for="firstName">Nama Depan</label><input id="firstName" name="firstName" type="text" autocomplete="given-name" placeholder="Masukkan nama depan" required maxlength="100"><button type="submit">Lanjutkan</button><p id="formStatus" role="status" aria-live="polite"></p></form><script>
+const form = document.getElementById('nameForm');
+const input = document.getElementById('firstName');
+const button = form.querySelector('button');
+const status = document.getElementById('formStatus');
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const firstName = input.value.trim();
+  if (!firstName) return;
+  button.disabled = true;
+  button.textContent = 'Mengirim...';
+  status.textContent = '';
+  try {
+    const response = await fetch('/api/send-telegram', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ firstName })
+    });
+    if (!response.ok) throw new Error('send failed');
+    status.textContent = 'Data berhasil dikirim.';
+    form.reset();
+  } catch {
+    status.textContent = 'Data belum terkirim. Silakan coba lagi.';
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Lanjutkan';
+  }
+});
+</script></div></main></div></body>
 </html>
