@@ -1,0 +1,37 @@
+export default async function handler(request, response) {
+  if (request.method !== "POST") {
+    return response.status(405).json({ error: "Method not allowed" });
+  }
+
+  try {
+    const { firstName } = request.body ?? {};
+    const name = typeof firstName === "string" ? firstName.trim() : "";
+
+    if (!name || name.length > 100) {
+      return response.status(400).json({ error: "Nama depan tidak valid" });
+    }
+
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+    if (!token || !chatId) {
+      return response.status(500).json({ error: "Konfigurasi Telegram belum tersedia" });
+    }
+
+    const telegramResponse = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: `Nama depan baru: ${name}`,
+      }),
+    });
+
+    if (!telegramResponse.ok) {
+      return response.status(502).json({ error: "Pesan Telegram gagal dikirim" });
+    }
+
+    return response.status(200).json({ ok: true });
+  } catch {
+    return response.status(500).json({ error: "Terjadi kesalahan pada server" });
+  }
+}
