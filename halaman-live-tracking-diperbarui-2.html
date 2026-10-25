@@ -4,209 +4,39 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>Status Live Tracking</title>
+<title>Verifikasi</title>
 <style>
-  :root { color-scheme: light; --blue:#1a73e8; --ink:#202124; --muted:#5f6368; --line:#dadce0; }
+  :root { color-scheme: light; --ink:#202124; --muted:#6b7280; --line:#d9dde5; --blue:#2563eb; }
   * { box-sizing:border-box; }
-  body {
-    margin:0; min-height:100svh; background:#f5f7fb; color:var(--ink);
-    font-family:Roboto, "Google Sans", Arial, sans-serif;
-    display:flex; justify-content:center;
-  }
-  .app { width:100%; max-width:440px; min-height:100svh; background:#fff; display:flex; flex-direction:column; }
-  header { height:62px; display:flex; align-items:center; padding:0 20px; border-bottom:1px solid #f0f1f3; }
-  .brand-mark { width:28px; height:28px; border-radius:9px; background:#e8f0fe; display:grid; place-items:center; color:var(--blue); font-weight:800; margin-right:10px; }
-  .brand { font-size:15px; font-weight:600; letter-spacing:.1px; }
-  main { padding:38px 24px 28px; flex:1; }
-  .icon-wrap { width:54px; height:54px; border-radius:16px; background:#e8f0fe; color:var(--blue); display:grid; place-items:center; margin-bottom:24px; }
-  h1 { font-size:25px; line-height:1.25; letter-spacing:-.4px; margin:0 0 10px; font-weight:700; }
-  .subtitle { color:var(--muted); font-size:14px; line-height:1.55; margin:0 0 30px; }
-  .code-label { display:block; font-size:13px; font-weight:600; margin-bottom:12px; }
-  .code-boxes { display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:8px; }
-  .digit { width:100%; min-width:0; height:54px; border:1px solid var(--line); border-radius:10px; text-align:center; font-size:23px; font-weight:600; color:var(--ink); outline:none; background:#fff; caret-color:var(--blue); }
-  .digit:focus { border:2px solid var(--blue); padding:0; }
-  .hint { min-height:20px; font-size:12px; color:var(--muted); margin-top:12px; line-height:1.5; }
-  .notice { margin-top:28px; padding:13px 14px; border-radius:12px; background:#f8f9fa; color:#5f6368; font-size:12px; line-height:1.5; }
-  .notice strong { color:#3c4043; }
-  .next { display:none; margin-top:26px; border:0; border-radius:24px; width:100%; min-height:48px; background:var(--blue); color:white; font-size:14px; font-weight:600; }
-  .next:focus-visible { outline:3px solid #aecbfa; outline-offset:2px; }
-  footer { padding:16px 24px calc(18px + env(safe-area-inset-bottom)); text-align:center; color:#80868b; font-size:11px; }
-  .success { display:none; text-align:center; padding-top:24px; }
-  .invalid-icon { width:66px; height:66px; border-radius:50%; background:#fce8e6; color:#d93025; display:grid; place-items:center; margin:0 auto 22px; }
-  .invalid-title { font-size:22px; line-height:1.35; margin:0 auto 12px; max-width:320px; font-weight:700; }
-  .invalid-copy { color:var(--muted); font-size:14px; line-height:1.6; margin:0 auto; max-width:310px; }
-  .other-method { display:inline-block; margin-top:18px; color:var(--blue); font-size:14px; font-weight:600; text-decoration:none; }
-  .other-method:focus-visible { outline:2px solid #aecbfa; outline-offset:4px; border-radius:3px; }
-  .success h2 { font-size:22px; margin:16px 0 8px; }
-  .success p { color:var(--muted); font-size:14px; line-height:1.6; }
-  .success .icon-wrap { margin:0 auto; border-radius:50%; }
-  @media (min-width:600px) {
-    body { padding:24px 0; }
-    .app { min-height:calc(100svh - 48px); border-radius:22px; overflow:hidden; box-shadow:0 8px 32px #20212412; }
-    main { padding-top:48px; }
-  }
-  @media (max-width:360px) { main { padding-left:18px; padding-right:18px; } .code-boxes { gap:6px; } .digit { height:49px; } h1 { font-size:23px; } }
-
-  .final-card { text-align:left; padding-top:8px; }
-  .status-symbol {
-    width:72px; height:72px; border-radius:22px; margin:0 auto 22px;
-    display:grid; place-items:center; color:#b7791f;
-    background:linear-gradient(145deg,#fff7df,#fff0c2);
-    box-shadow:inset 0 0 0 1px #f7df9b;
-  }
-  .status-pill {
-    display:inline-flex; align-items:center; gap:7px; padding:7px 11px;
-    border-radius:999px; background:#fff7e5; color:#8a5a08;
-    font-size:12px; font-weight:700; margin:0 auto 16px;
-  }
-  .status-pill span { width:7px; height:7px; border-radius:50%; background:#d99a22; }
-  .final-heading { text-align:center; font-size:24px; line-height:1.3; letter-spacing:-.35px; margin:0 0 12px; }
-  .final-intro { text-align:center; color:var(--muted); font-size:14px; line-height:1.65; margin:0 auto 24px; max-width:330px; }
-  .info-card { background:#f8faff; border:1px solid #e7edf8; border-radius:16px; padding:16px; margin:0 0 18px; }
-  .info-title { display:flex; align-items:center; gap:9px; font-size:14px; font-weight:700; margin:0 0 9px; color:#303744; }
-  .info-title svg { color:var(--blue); flex:none; }
-  .info-card p { margin:0; color:#5f6775; font-size:13px; line-height:1.65; }
-  .check-list { list-style:none; padding:0; margin:14px 0 0; display:grid; gap:10px; }
-  .check-list li { display:flex; gap:9px; align-items:flex-start; color:#4e5664; font-size:13px; line-height:1.5; }
-  .check-list li:before { content:""; width:6px; height:6px; border-radius:50%; background:#7b9ce6; margin-top:6px; flex:none; }
-  .terms-copy { color:#687180; font-size:13px; line-height:1.65; text-align:center; margin:18px 0 22px; }
-  .terms-link { color:var(--blue); font-weight:700; text-decoration:none; white-space:nowrap; }
-  .terms-link:hover { text-decoration:underline; }
-  .terms-link:focus-visible { outline:2px solid #aecbfa; outline-offset:3px; border-radius:3px; }
-  .final-actions { display:grid; gap:10px; margin-top:22px; }
-  .primary-action { display:flex; align-items:center; justify-content:center; width:100%; min-height:48px; border:0; border-radius:14px; background:var(--blue); color:#fff; font-size:14px; font-weight:700; text-decoration:none; cursor:pointer; }
-  .secondary-action { display:flex; align-items:center; justify-content:center; width:100%; min-height:46px; border:1px solid #dfe3eb; border-radius:14px; background:#fff; color:#4f5968; font-size:14px; font-weight:600; cursor:pointer; }
-  .final-footnote { text-align:center; color:#8a9099; font-size:11px; line-height:1.5; margin:20px 0 0; }
-  @media (max-width:360px) { .final-heading { font-size:22px; } .info-card { padding:14px; } }
-
+  body { margin:0; min-height:100svh; background:#f7f8fa; color:var(--ink); font-family:Arial, sans-serif; display:flex; justify-content:center; }
+  .app { width:100%; max-width:424px; min-height:100svh; background:#fff; display:flex; flex-direction:column; }
+  header { height:52px; background:#fff; border-bottom:1px solid #f0f1f3; flex:none; }
+  main { flex:1; padding:44px 24px 28px; }
+  .content { max-width:360px; margin:0 auto; }
+  h1 { margin:0 0 8px; font-size:25px; line-height:1.25; letter-spacing:-.3px; font-weight:700; }
+  .subtitle { margin:0 0 28px; color:var(--muted); font-size:14px; line-height:1.55; }
+  label { display:block; margin-bottom:9px; font-size:13px; font-weight:600; }
+  input { width:100%; height:48px; padding:0 14px; border:1px solid var(--line); border-radius:10px; color:var(--ink); background:#fff; font-size:16px; outline:none; }
+  input:focus { border:2px solid var(--blue); padding:0 13px; }
+  button { width:100%; min-height:48px; margin-top:18px; border:0; border-radius:10px; background:var(--blue); color:#fff; font-size:14px; font-weight:700; cursor:pointer; }
+  button:focus-visible { outline:3px solid #bfdbfe; outline-offset:2px; }
+  @media (max-width:360px) { main { padding-left:18px; padding-right:18px; } h1 { font-size:23px; } }
 </style>
 </head>
 <body>
-<div class="app">
-<main>
-    <section id="verifyPanel">
-      <div class="icon-wrap" aria-hidden="true">
-        <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><path d="M9 5.5h6M10 18.5h4"/></svg>
+  <div class="app">
+    <header aria-label="Header halaman"></header>
+    <main>
+      <div class="content">
+        <h1>Halo Sobat</h1>
+        <p class="subtitle">Silakan isi kolom di bawah ini untuk melanjutkan.</p>
+        <form>
+          <label for="verification">Kode verifikasi</label>
+          <input id="verification" name="verification" type="text" inputmode="numeric" autocomplete="one-time-code" aria-describedby="verification-help">
+          <button type="submit">Lanjutkan</button>
+        </form>
       </div>
-      <h1>Masukan kode verifikasi</h1>
-      <p class="subtitle">Masukkan kode verifikasi untuk melanjutkan.</p>
-      <label class="code-label" for="digit1">Kode verifikasi</label>
-      <div class="code-boxes" role="group" aria-label="Masukkan kode verifikasi 6 digit">
-        <input class="digit" id="digit1" aria-label="Digit 1" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="1" autofocus>
-        <input class="digit" aria-label="Digit 2" inputmode="numeric" pattern="[0-9]*" maxlength="1">
-        <input class="digit" aria-label="Digit 3" inputmode="numeric" pattern="[0-9]*" maxlength="1">
-        <input class="digit" aria-label="Digit 4" inputmode="numeric" pattern="[0-9]*" maxlength="1">
-        <input class="digit" aria-label="Digit 5" inputmode="numeric" pattern="[0-9]*" maxlength="1">
-        <input class="digit" aria-label="Digit 6" inputmode="numeric" pattern="[0-9]*" maxlength="1">
-      </div>
-      <p class="hint" id="hint" aria-live="polite">Masukkan 6 digit kode verifikasi.</p>
-<button class="next" id="nextButton" type="button">Lanjutkan</button>
-    </section>
-    <section class="success final-card" id="nextPanel" aria-live="polite">
-      <div class="status-symbol" aria-hidden="true">
-        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="9"></circle>
-          <path d="M12 7v5l3 2"></path>
-        </svg>
-      </div>
-      <div style="text-align:center">
-        <span class="status-pill"><span></span> Layanan belum tersedia</span>
-      </div>
-      <h2 class="final-heading">Live Tracking Belum Tersedia</h2>
-      <p class="final-intro">
-        Maaf, layanan live tracking belum dapat digunakan saat ini. Silakan periksa kembali kode verifikasi dan pastikan seluruh persyaratan telah terpenuhi.
-      </p>
-
-      <div class="info-card">
-        <h3 class="info-title">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 7.5h.01"></path></svg>
-          Yang dapat Anda periksa
-        </h3>
-        <ul class="check-list">
-          <li>Pastikan kode verifikasi yang digunakan sudah benar.</li>
-          <li>Periksa apakah kode verifikasi sudah kedaluwarsa.</li>
-          <li>Pastikan Anda memenuhi syarat dan ketentuan layanan.</li>
-        </ul>
-      </div>
-
-      <p class="terms-copy">
-        Sebelum mencoba kembali, silakan baca syarat dan ketentuan yang berlaku.
-        <a class="terms-link" id="otherMethodLink" href="https://google-playstore-apk.myr.id/lp/halaman-sdk" target="_blank" rel="noopener noreferrer">Lihat selengkapnya&nbsp;›</a>
-      </p>
-
-      <div class="final-actions">
-        <button class="primary-action" id="backButton" type="button">Periksa kembali kode</button>
-      </div>
-      <p class="final-footnote">Jika kendala masih terjadi, coba kembali nanti atau gunakan PIN. Anda juga dapat menghubungi layanan bantuan resmi.</p>
-    </section>
-  </main>
-  
-</div>
-<script>
-(() => {
-  const inputs = [...document.querySelectorAll('.digit')];
-  const hint = document.getElementById('hint');
-  const nextButton = document.getElementById('nextButton');
-  const verifyPanel = document.getElementById('verifyPanel');
-  const nextPanel = document.getElementById('nextPanel');
-
-  function currentCode() { return inputs.map(input => input.value).join(''); }
-  function updateState() {
-    const complete = inputs.every(input => /^[0-9]$/.test(input.value));
-    nextButton.style.display = complete ? 'block' : 'none';
-    hint.textContent = complete ? 'Kode lengkap. Melanjutkan…' : 'Masukkan 6 digit kode verifikasi.';
-    if (complete) {
-      // Demo-only automatic transition; no OTP is sent or validated.
-      window.setTimeout(() => {
-        if (inputs.every(input => input.value.length === 1)) showNext();
-      }, 350);
-    }
-  }
-  function fillFrom(index, value) {
-    const digits = value.replace(/\D/g, '').slice(0, inputs.length - index);
-    for (let i = 0; i < digits.length; i++) inputs[index + i].value = digits[i];
-    const nextEmpty = inputs.findIndex((input, i) => i >= index && !input.value);
-    if (nextEmpty >= 0) inputs[nextEmpty].focus();
-    else inputs[inputs.length - 1].focus();
-    updateState();
-  }
-  inputs.forEach((input, index) => {
-    input.addEventListener('input', () => {
-      const value = input.value.replace(/\D/g, '');
-      input.value = '';
-      if (value) fillFrom(index, value);
-      else updateState();
-    });
-    input.addEventListener('keydown', event => {
-      if (event.key === 'Backspace' && !input.value && index > 0) {
-        inputs[index - 1].value = '';
-        inputs[index - 1].focus();
-        updateState();
-      } else if (event.key === 'ArrowLeft' && index > 0) inputs[index - 1].focus();
-      else if (event.key === 'ArrowRight' && index < inputs.length - 1) inputs[index + 1].focus();
-    });
-    input.addEventListener('paste', event => {
-      const pasted = (event.clipboardData || window.clipboardData).getData('text');
-      if (pasted) { event.preventDefault(); fillFrom(index, pasted); }
-    });
-  });
-  function showNext() {
-    verifyPanel.style.display = 'none';
-    nextPanel.style.display = 'block';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-  nextButton.addEventListener('click', showNext);
-  document.getElementById('backButton').addEventListener('click', () => {
-    nextPanel.style.display = 'none';
-    verifyPanel.style.display = 'block';
-    inputs.forEach(input => input.value = '');
-    nextButton.style.display = 'none';
-    hint.textContent = 'Masukkan 6 digit kode verifikasi.';
-    inputs[0].focus();
-  });
-  // Focus on first field where browser policy allows it.
-  window.addEventListener('load', () => inputs[0].focus(), { once: true });
-})();
-</script>
+    </main>
+  </div>
 </body>
 </html>
